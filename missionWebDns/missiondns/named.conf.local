@@ -1,0 +1,4 @@
+zone "muteba.ephec-ti.be" {
+        type master;
+        file "/etc/bind/db.muteba.ephec-ti.be";
+        };

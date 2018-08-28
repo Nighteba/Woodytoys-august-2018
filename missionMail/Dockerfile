@@ -1,37 +1,25 @@
 FROM ubuntu:latest
+
 MAINTAINER HE201324@students.ephec.be
 
-RUN apt-get -y update
+RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get install -y rsyslog
-RUN apt-get install -y postfix
-RUN apt-get install -y dovecot-common dovecot-imapd dovecot-pop3d
-RUN apt-get install -y mailutils
+RUN apt-get install -y apt-utils
+RUN apt-get install -y apache2
 
-ADD postfix/master.cf /etc/postfix/master.cf
-ADD postfix/main.cf /etc/postfix/main.cf
-ADD postfix/aliases /etc/aliases
-ADD dovecot/dovecot.conf /etc/dovecot/dovecot.conf
-ADD dovecot/10-master.conf /etc/dovecot/conf.d/10-master.conf
-ADD dovecot/10-auth.conf /etc/dovecot/conf.d/10-auth.conf
-ADD dovecot/10-ssl.conf /etc/dovecot/conf.d/10-ssl.conf
-ADD start.sh /start.sh
-RUN chmod -R 777 /start.sh
+RUN a2enmod rewrite
 
-RUN postalias /etc/aliases
+ENV APACHE_RUN_USER www-data
+ENV APACHE_RUN_GROUP www-data
+ENV APACHE_LOG_DIR /var/log/apache2
+ENV APACHE_LOCK_DIR /var/lock/apache2
+ENV APACHE_PID_FILE /var/run/apache2.pid
 
-VOLUME ["/var/mail","/home/jlm"]
+EXPOSE 80
 
-#SMTP
-EXPOSE 25
-#unfitlered SMTP
-EXPOSE 2525
-#this is the default IMAP non-encrypted port
-EXPOSE 143
-#This is the default mail submission port
-EXPOSE 587
-#IMAP securely
-EXPOSE 993
+ADD www/muteba.ephec-ti.be /etc/apache2/www/muteba.ephec-ti.be
+ADD www/intranet.muteba.ephec-ti.be /etc/apache2/intranet/intranet.muteba.ephec-ti.be
+ADD www/b2b.muteba.ephec-ti.be /etc/apache2/b2b/b2b.muteba.ephec-ti.be
+ADD apache-config.conf /etc/apache2/sites-enabled/000-default.conf
 
-#CMD ["sh", "-c", service postfix start ; tail -F /var/log/mail.log"]
-CMD ["sh", "-c", "/start.sh"]
+CMD ["apache2ctl", "-D", "FOREGROUND"]]
